@@ -140,8 +140,8 @@ export function TopHeader({
       <div className="flex items-center justify-between gap-3 px-3 py-2 lg:px-4">
         {/* Left: Brand & Station Selector & Role Switcher */}
         <div className="flex items-center gap-2 shrink-0 min-w-0">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-sm border border-gov-saffron/60 bg-white/10">
-            <Snowflake className="h-5 w-5 text-gov-saffron" strokeWidth={1.8} />
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-cyan-400/40 bg-gov-navy-light/60 overflow-hidden shadow-inner p-0.5">
+            <img src="/favicon.svg" alt="PolarTwin Logo" className="h-full w-full object-contain drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]" />
           </div>
           <div className="min-w-0 leading-tight">
             <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-gov-saffron">

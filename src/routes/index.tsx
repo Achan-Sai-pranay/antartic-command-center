@@ -20,13 +20,13 @@ import { Bot, Sparkles, AlertTriangle } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Antarctic Digital Twin — MoES Station Command (PolarTwin)" },
+      { title: "PolarTwin · Antarctic Digital Twin Command" },
       {
         name: "description",
         content:
           "End-to-end interactive Digital Twin and Remote Management Platform for India's Bharati and Maitri Antarctic research stations under MoES / NCPOR.",
       },
-      { property: "og:title", content: "Antarctic Digital Twin — MoES Station Command (PolarTwin)" },
+      { property: "og:title", content: "PolarTwin · Antarctic Digital Twin Command" },
       {
         property: "og:description",
         content:

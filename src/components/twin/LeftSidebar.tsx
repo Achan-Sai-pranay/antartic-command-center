@@ -97,31 +97,7 @@ export function LeftSidebar({
           ))}
         </Section>
 
-        <Section title="Level Selector" collapsed={collapsed}>
-          {LEVELS.map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => onLevel(l.id)}
-              title={`${l.label} — ${l.sub}`}
-              className={`flex w-full items-center gap-2.5 rounded-sm border px-2.5 py-2 text-left transition-all ${
-                level === l.id
-                  ? "border-gov-saffron bg-gov-saffron/10"
-                  : "border-transparent hover:border-gov-border hover:bg-gov-bg"
-              }`}
-            >
-              <Layers
-                className={`h-4 w-4 shrink-0 ${level === l.id ? "text-gov-saffron" : "text-gov-muted"}`}
-              />
-              {!collapsed && (
-                <span className="min-w-0">
-                  <span className="block truncate text-xs font-semibold text-gov-text">{l.label}</span>
-                  <span className="block truncate text-[10px] text-gov-muted">{l.sub}</span>
-                </span>
-              )}
-            </button>
-          ))}
-        </Section>
+
 
         <Section title="Subsystem Filters" collapsed={collapsed}>
           {(Object.keys(SUBSYSTEM_LABELS) as Subsystem[]).map((s) => {

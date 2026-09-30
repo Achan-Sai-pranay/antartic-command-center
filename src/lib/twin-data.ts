@@ -1799,12 +1799,19 @@ export const STATIONS = [
     coords: "70°46′S 11°44′E",
     crew: 18,
   },
+  {
+    id: "maitri-2",
+    name: "Maitri-II (Next-Gen)",
+    region: "Queen Maud Land (Commissioning 2029)",
+    coords: "70°45′S 11°43′E",
+    crew: 30,
+  },
 ] as const;
 
 export type ZoneLocation = {
   id: string;
   name: string;
-  station: "maitri" | "bharati";
+  station: "maitri" | "bharati" | "maitri-2";
   view: "plan" | "section" | "transverse";
 };
 

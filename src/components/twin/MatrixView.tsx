@@ -20,7 +20,8 @@ export function MatrixView({
   selected: string | null;
   onSelect: (id: string) => void;
 }) {
-  const ALL = station === "maitri" ? MAITRI_ROOMS : [...BHARATI_ROOMS, ...SECTION_ZONES];
+  const isMaitri = station === "maitri" || station === "maitri-2";
+  const ALL = isMaitri ? MAITRI_ROOMS : [...BHARATI_ROOMS, ...SECTION_ZONES];
   const zones = ALL.filter((z) => z.subsystems.some((s) => filters[s]));
 
   return (

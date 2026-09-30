@@ -13,6 +13,7 @@ import {
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Reading } from "@/lib/telemetry";
 import { BHARATI_ROOMS, MAITRI_ROOMS, SECTION_ZONES, type Status } from "@/lib/twin-data";
+import { useSecurity } from "@/lib/security-context";
 
 const ALL = [...BHARATI_ROOMS, ...MAITRI_ROOMS, ...SECTION_ZONES];
 
@@ -35,6 +36,8 @@ export function InspectorPanel({
   onLog: (level: "INFO" | "WARN" | "CRITICAL" | "SUCCESS", source: string, message: string) => void;
   onEmergencyOverride?: (command: string) => void;
 }) {
+  const { role } = useSecurity();
+  const isObserver = role === "OBSERVER";
   const zone = ALL.find((z) => z.id === selected);
   const activeReading =
     reading ||
@@ -147,11 +150,46 @@ export function InspectorPanel({
         <Chart title="24H Energy Consumption (kW)" data={activeReading.history} dataKey="power" color="#d97706" />
 
         <div className="space-y-1.5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gov-muted">Remote Control</p>
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gov-muted">Remote Control</p>
+            {isObserver && (
+              <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[9px] font-bold text-sky-800 border border-sky-300">
+                READ-ONLY
+              </span>
+            )}
+          </div>
+
+          {isObserver && (
+            <p className="rounded border border-sky-500/30 bg-sky-500/10 p-2 text-[10px] text-sky-700 leading-snug">
+              Telecommands disabled in Observer/Scientist role. Switch to Goa Operator or Station Commander to execute overrides.
+            </p>
+          )}
+
+          {activeReading.status === "critical" && (
+            <button
+              onClick={() => {
+                if (onEmergencyOverride) {
+                  onEmergencyOverride(`EMERGENCY_FAN_START_AND_BREAKER_ISOLATION_${zone.id.toUpperCase()}`);
+                }
+              }}
+              disabled={isObserver}
+              className={`w-full flex items-center justify-center gap-1.5 rounded border p-2 text-xs font-bold transition-all ${
+                isObserver
+                  ? "bg-white/10 border-gov-border text-gov-disabled cursor-not-allowed"
+                  : "border-rose-500 bg-rose-600 text-white hover:bg-rose-700 shadow-md animate-pulse"
+              }`}
+            >
+              <Flame className="h-4 w-4" />
+              <span>Emergency Fan Start & Breaker Trip</span>
+            </button>
+          )}
+
           <ControlBtn
             icon={Thermometer}
             label="Override Heating (+1°C)"
+            disabled={isObserver}
             onClick={() => {
+              if (isObserver) return;
               onUpdate(zone.id, { target: activeReading.target + 1 });
               act(`heating setpoint overridden to ${activeReading.target + 1}°C.`, "SUCCESS");
             }}
@@ -160,7 +198,9 @@ export function InspectorPanel({
             icon={Fan}
             label={activeReading.fan ? "Toggle Exhaust Fan — ON" : "Toggle Exhaust Fan — OFF"}
             active={activeReading.fan}
+            disabled={isObserver}
             onClick={() => {
+              if (isObserver) return;
               onUpdate(zone.id, { fan: !activeReading.fan });
               act(`exhaust fan ${activeReading.fan ? "stopped" : "started"}.`);
             }}
@@ -169,7 +209,9 @@ export function InspectorPanel({
             icon={activeReading.locked ? Lock : Unlock}
             label={activeReading.locked ? "Unlock Door" : "Lock Door"}
             active={activeReading.locked}
+            disabled={isObserver}
             onClick={() => {
+              if (isObserver) return;
               onUpdate(zone.id, { locked: !activeReading.locked });
               act(`door ${activeReading.locked ? "unlocked" : "locked"} by remote operator.`, "WARN");
             }}
@@ -178,7 +220,9 @@ export function InspectorPanel({
             icon={BellOff}
             label={activeReading.alarmSilenced ? "Alarm Silenced" : "Silence Alarm"}
             active={activeReading.alarmSilenced}
+            disabled={isObserver}
             onClick={() => {
+              if (isObserver) return;
               onUpdate(zone.id, { alarmSilenced: !activeReading.alarmSilenced });
               act(`local alarm ${activeReading.alarmSilenced ? "re-armed" : "silenced"}.`, "WARN");
             }}
@@ -189,7 +233,12 @@ export function InspectorPanel({
                 onEmergencyOverride(`TRIGGER_EMERGENCY_ISOLATION_${zone.id.toUpperCase()}`);
               }
             }}
-            className="w-full flex items-center justify-center gap-1.5 rounded border border-amber-500/60 bg-amber-500/15 py-1.5 px-2 text-xs font-bold text-amber-300 hover:bg-amber-500/30 transition-all mt-2"
+            disabled={isObserver}
+            className={`w-full flex items-center justify-center gap-1.5 rounded border py-1.5 px-2 text-xs font-bold transition-all mt-2 ${
+              isObserver
+                ? "border-gov-border bg-gov-bg text-gov-disabled cursor-not-allowed"
+                : "border-amber-500/60 bg-amber-500/15 text-amber-700 hover:bg-amber-500/30"
+            }`}
           >
             <Lock className="h-3.5 w-3.5 text-gov-saffron" />
             <span>Dual-Sig Emergency Override</span>
@@ -274,20 +323,25 @@ function ControlBtn({
   label,
   onClick,
   active,
+  disabled,
 }: {
   icon: typeof Activity;
   label: string;
   onClick: () => void;
   active?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-2 rounded-sm border px-2.5 py-2 text-left text-xs font-medium transition-all active:scale-[0.98] ${
-        active
-          ? "border-gov-navy-primary bg-gov-navy-primary/10 text-gov-navy-primary"
-          : "border-gov-border bg-white text-gov-text hover:border-gov-navy-primary hover:bg-gov-bg"
+      disabled={disabled}
+      className={`flex w-full items-center gap-2 rounded-sm border px-2.5 py-2 text-left text-xs font-medium transition-all ${
+        disabled
+          ? "border-gov-border bg-gov-bg/60 text-gov-disabled cursor-not-allowed"
+          : active
+          ? "border-gov-navy-primary bg-gov-navy-primary/10 text-gov-navy-primary active:scale-[0.98]"
+          : "border-gov-border bg-white text-gov-text hover:border-gov-navy-primary hover:bg-gov-bg active:scale-[0.98]"
       }`}
     >
       <Icon className="h-3.5 w-3.5 shrink-0" />
